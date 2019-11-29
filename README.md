@@ -1,28 +1,26 @@
-# GD32450Z-EVAL
+# GD32350R-EVAL
 
 ## 简介
 
-GD32450Z-EVAL是-兆易创新推出的一款GD32F450系列的评估板，板载资源主要如下：
+GD32350R-EVAL是-兆易创新推出的一款GD32F350系列的评估板，板载资源主要如下：
 
 | 硬件      | 描述          |
 | --------- | ------------- |
-| 芯片型号  | GD32F450ZKT6  |
-| CPU       | ARM Cortex M4 |
-| 主频      | 200M          |
-| 片内SRAM  | 256K          |
-| 片外SDRAM | 32M           |
-| 片内FLASH | 3072K         |
+| 芯片型号  | GD32F350RBT6  |
+| CPU      | ARM Cortex M4 |
+| 主频      | 84M          |
+| 片内SRAM  | 14K          |
+| 片内FLASH | 64K         |
 
 ## 编译说明
 
-GD32450Z-EVAL板级包支持MDK4﹑MDK5﹑IAR开发环境和GCC编译器，以下是具体版本信息：
+GD32350R-EVAL板级包支持MDK4﹑MDK5﹑IAR开发环境 编译器，以下是具体版本信息：
 
 | IDE/编译器 | 已测试版本                   |
 | ---------- | ---------------------------- |
 | MDK4       | MDK4.74                      |
 | MDK5       | MDK524a                      |
 | IAR        | IAR 7.60~IAR8.20             |
-| GCC        | GCC 5.4.1 20160919 (release) |
 
 ## 烧写及执行
 
@@ -70,4 +68,4 @@ finsh />
 
 ## 联系人信息
 
-维护人：[tanek](https://github.com/TanekLiang)
+维护人：[springcity2014](https://github.com/springcity2016/gd32_rt-thread)
