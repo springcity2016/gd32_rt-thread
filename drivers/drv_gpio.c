@@ -6,16 +6,11 @@
 #include "gd32f3x0_exti.h"
 
 
-// #ifdef RT_USIING_PIN     // 文件写完后打开
+#ifdef RT_USING_PIN     // 文件写完后打开
 
-#define __GD32_PIN(index, port, pin) { index, RCU_GPIO##port, GPIO##port, \
-        GPIO_PIN_##pin, GPIO_PORT_SOURCE_GPIO##port, GPIO_PIN_SOURCE_##pin }
-#define __GD32_PIN_DEFAULT  { -1, (rcu_periph_enum)0, 0, 0, 0, 0 }
-
-// #define __GD32_PIN(index, port, pin) {index, RCU_GPIO##port, GPIO##port, \
-//         GPIO_PIN_##pin, GPIO_PORT_SOURCE_GPIO##port, GPIO_PIN_SOURCE_##pin}
-// #define __GD32_PIN_DEFAULT {-1, (rcu_periph_enum)0, 0, 0, 0, 0}
-
+#define __GD32_PIN(index, port, pin) {index, RCU_GPIO##port, GPIO##port, \
+        GPIO_PIN_##pin, EXTI_SOURCE_GPIO##port, EXTI_SOURCE_PIN##pin}
+#define __GD32_PIN_DEFAULT {-1, (rcu_periph_enum)0, 0, 0, 0, 0}
 
 /* GD32 GPIO driver */
 struct pin_index
@@ -312,7 +307,60 @@ rt_err_t gd32_pin_irq_enable(struct rt_device *device, rt_base_t pin, rt_uint32_
     rt_base_t level;
     rt_int32_t hdr_index = -1;
     exti_trig_type_enum trigger_mode;
-    
+
+    index = get_pin(pin);
+    if (index == RT_NULL) { return RT_EINVAL; }
+    if (enable == PIN_IRQ_ENABLE) {
+        hdr_index = bit2bitno(index->pin);
+        if ((hdr_index < 0)
+         || (hdr_index >= ITEM_NUM(pin_irq_map))) {
+            return RT_EINVAL;
+        }
+        level = rt_hw_interrupt_disable();
+        if (pin_irq_hdr_tab[hdr_index].pin == -1) {
+            rt_hw_interrupt_enable(level);
+            return RT_EINVAL;
+        }
+        irqmap = &pin_irq_map[hdr_index];
+        
+        switch (pin_irq_hdr_tab[hdr_index].mode)
+        {
+        case PIN_IRQ_MODE_RISING:
+            trigger_mode = EXTI_TRIG_RISING;
+            break;
+        case PIN_IRQ_MODE_FALLING:
+            trigger_mode = EXTI_TRIG_FALLING;
+            break;
+        case PIN_IRQ_MODE_RISING_FALLING:
+            trigger_mode = EXTI_TRIG_BOTH;
+            break;
+        default:
+            rt_hw_interrupt_enable(level);
+            return RT_EINVAL;
+        }
+
+        // rcu_periph_clock_enable(RCU_AF);
+        rcu_periph_clock_enable(RCU_CFGCMP);
+        /* enable and set interrupt priority */
+        nvic_irq_enable(irqmap->irqno, 5U, 0U);
+        /* connect EXTI line to  GPIO pin */
+        // gpio_exti_source_select(index->port_src, index->pin_src);
+        syscfg_exti_line_config(index->port_src, index->pin_src);
+        /* configure EXTI line */
+        exti_init((exti_line_enum)(index->pin), EXTI_INTERRUPT, trigger_mode);
+        exti_interrupt_flag_clear((exti_line_enum)(index->pin));
+        
+        rt_hw_interrupt_enable(level);
+    } else if (enable == PIN_IRQ_DISABLE) {
+        irqmap = get_pin_irq_map(index->pin);
+        if (irqmap == RT_NULL) {
+            return RT_EINVAL;
+        }
+        nvic_irq_disable(irqmap->irqno);
+    } else {
+        return RT_EINVAL;
+    }
+
     return RT_EOK;
 }
 const static struct rt_pin_ops _gd32_pin_ops = 
@@ -332,5 +380,52 @@ int rt_hw_pin_init(void)
 }
 INIT_BOARD_EXPORT(rt_hw_pin_init);
 
-// #endif                   // 文件写完后打开
+rt_inline void pin_irq_hdr(int irqno)
+{
+    if (pin_irq_hdr_tab[irqno].hdr) {
+        pin_irq_hdr_tab[irqno].hdr(pin_irq_hdr_tab[irqno].args);
+    }
+}
+
+void GD32_GPIO_EXTI_IRQHandler(rt_int8_t exti_line)
+{
+    if (RESET != exti_interrupt_flag_get((exti_line_enum)(1 << exti_line))) {
+        pin_irq_hdr(exti_line);
+        exti_interrupt_flag_clear((exti_line_enum)(1 << exti_line));
+    }
+}
+void EXTI0_1_IRQHandler(void)
+{
+    rt_interrupt_enter();
+    GD32_GPIO_EXTI_IRQHandler(0);
+    GD32_GPIO_EXTI_IRQHandler(1);
+    rt_interrupt_leave();
+}
+void EXTI2_3_IRQHandler(void)
+{
+    rt_interrupt_enter();
+    GD32_GPIO_EXTI_IRQHandler(2);
+    GD32_GPIO_EXTI_IRQHandler(3);
+    rt_interrupt_leave();
+}
+void EXTI4_15_IRQHandler(void)
+{
+    rt_interrupt_enter();
+    GD32_GPIO_EXTI_IRQHandler(4);
+    GD32_GPIO_EXTI_IRQHandler(5);
+    GD32_GPIO_EXTI_IRQHandler(6);
+    GD32_GPIO_EXTI_IRQHandler(7);
+    GD32_GPIO_EXTI_IRQHandler(8);
+    GD32_GPIO_EXTI_IRQHandler(9);
+    GD32_GPIO_EXTI_IRQHandler(10);
+    GD32_GPIO_EXTI_IRQHandler(11);
+    GD32_GPIO_EXTI_IRQHandler(12);
+    GD32_GPIO_EXTI_IRQHandler(13);
+    GD32_GPIO_EXTI_IRQHandler(14);
+    GD32_GPIO_EXTI_IRQHandler(15);
+    rt_interrupt_leave();
+}
+
+
+#endif                   // 文件写完后打开
 

@@ -31,18 +31,3 @@ config RT_USING_USART1
     select RT_USING_SERIAL
     default n
 
-config RT_USING_USART2
-    bool "Using USART2"
-    select RT_USING_SERIAL
-    default n
-
-config RT_USING_UART3
-    bool "Using UART3"
-    select RT_USING_SERIAL
-    default n
-    
-config RT_USING_UART4
-    bool "Using UART4"
-    select RT_USING_SERIAL
-    default y
-

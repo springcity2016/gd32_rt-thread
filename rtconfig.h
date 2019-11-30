@@ -128,6 +128,5 @@
 /* samples: kernel and components samples */
 
 #define RT_USING_USART0
-#define RT_USING_UART4
 
 #endif
