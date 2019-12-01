@@ -24,15 +24,23 @@
 
 #include <stdio.h>
 #include <rtthread.h>
+#include <rtdevice.h>
+
+#define LED_1_INDEX                 50  // PC10  
 
 int main(void)
 {
     rt_kprintf(" start main task! %d \n", __LINE__);
-
+    //rt_pin_mode(LED_1_INDEX, PIN_MODE_OUTPUT);
+		//rt_pin_write(LED_1_INDEX, PIN_LOW);
+	
     while(1)
     {
-
-        rt_thread_mdelay(500);
+		//		rt_pin_write(LED_1_INDEX, PIN_LOW);
+			rt_kprintf(" start main task! %d \n", __LINE__);
+        rt_thread_mdelay(1000);
+      //  rt_pin_write(LED_1_INDEX, PIN_HIGH);
+        rt_thread_mdelay(1000);
     }
 
 }
