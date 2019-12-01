@@ -27,5 +27,12 @@
 
 int main(void)
 {
-    return 0;
+    rt_kprintf(" start main task! %d \n", __LINE__);
+
+    while(1)
+    {
+
+        rt_thread_mdelay(500);
+    }
+
 }
